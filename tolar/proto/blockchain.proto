@@ -10,7 +10,8 @@ service BlockchainService {
     rpc GetLatestBlock(GetLatestBlockRequest) returns (GetBlockResponse);
     rpc GetBlockByHash(GetBlockByHashRequest) returns (GetBlockResponse);
     rpc GetBlockByIndex(GetBlockByIndexRequest) returns (GetBlockResponse);
-    rpc GetPaginatedBlocksByIndexStream(GetPaginatedBlocksByIndexRequest) returns (stream storage.Block);
+    rpc DeprecatedGetPaginatedBlocksByIndexStream(GetPaginatedBlocksByIndexRequest) returns (stream storage.Block);
+    rpc GetPaginatedBlocksByIndexStream(GetPaginatedBlocksByIndexRequest) returns (stream GetPaginatedBlocksByIndexResponse);
     rpc GetCompleteBlockByIndex (GetBlockByIndexRequest) returns (GetCompleteBlockByIndexResponse);
     rpc GetTransaction(GetTransactionRequest) returns (GetTransactionResponse);
     rpc GetTransactionReceipt(GetTransactionReceiptRequest) returns (GetTransactionReceiptResponse);
@@ -21,6 +22,7 @@ service BlockchainService {
     rpc GetNonce(GetNonceRequest) returns (GetNonceResponse);
     rpc TryCallTransaction(tx.Transaction) returns (TryCallTransactionResponse);
     rpc GetGasEstimate(tx.Transaction) returns (GetGasEstimateResponse);
+    rpc GetPastEvents(GetPastEventsRequest) returns (GetPastEventsResponse);
 }
 
 message GetBlockCountRequest {
@@ -54,6 +56,17 @@ message GetPaginatedBlocksByIndexRequest {
     uint64 number_of_blocks = 2;
 }
 
+message GetPaginatedBlocksByIndexResponse {
+  bytes block_hash = 1;
+  uint64 index = 2;
+  uint64 round_received = 3;
+  uint64 timestamp = 4;
+  bytes previous_block_hash = 5;
+  bytes state_root_hash = 6;
+  repeated tx.SignedTransaction transactions = 7;
+  bytes events_proof_hash = 8;
+}
+
 message GetCompleteBlockByIndexResponse {
     storage.Block block = 1;
 }
@@ -79,6 +92,8 @@ message GetTransactionResponse {
     bytes new_address = 14;
     bytes output = 15;
     bool excepted = 16;
+    uint32 exception = 17;
+    uint64 network_id = 18;
 }
 
 message GetBlockchainInfoRequest {
@@ -105,6 +120,7 @@ message GetTransactionReceiptResponse {
     bytes new_address = 8;
     bytes gas_used = 9;
     repeated tx.LogEntry logs = 10;
+    uint32 exception = 11;
 }
 
 message GetTransactionListRequest {
@@ -138,9 +154,31 @@ message GetNonceResponse {
 message TryCallTransactionResponse {
     bytes output = 1;
     bool excepted = 2;
+    uint32 exception = 3;
 }
 
 message GetGasEstimateResponse {
     uint64 gas_estimate = 1;
+}
+
+message GetPastEventsRequest {
+    bytes address = 1;
+    bytes topic = 2;
+}
+
+message PastEvent {
+    bytes address = 1;
+    bytes topic = 2;
+    bytes topic_arg_0 = 3;
+    bytes topic_arg_1 = 4;
+    bytes topic_arg_2 = 5;
+    bytes data = 6;
+    bytes transaction_hash = 7;
+    bytes block_hash = 8;
+    uint64 block_index = 9;
+}
+
+message GetPastEventsResponse {
+    repeated PastEvent past_events = 1;
 }
 

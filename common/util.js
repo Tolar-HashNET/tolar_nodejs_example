@@ -4,6 +4,12 @@ const bigintBuffer = require('bigint-buffer')
 const grpc = require('@grpc/grpc-js');
 const grpcPromise = require('grpc-promise');
 
+const NetworkId = {
+    MainNet: 1,
+    TestNet: 2,
+    StageNet: 3
+};
+
 
 function loadProtoDefinitions(protoName) {
     const genDirPath = `..${path.sep}gen${path.sep}tolar${path.sep}proto${path.sep}`
@@ -99,7 +105,7 @@ async function createAddress(accountClient) {
     return address.getAddress();
 }
 
-async function sendTransaction(accountClient, blockchainClient, from, to, amountInAttoTolar) {
+async function sendTransaction(accountClient, blockchainClient, from, to, amountInAttoTolar, network_id) {
     const nonce = await blockchainClient.getNonce()
         .sendMessage(new blockchain.msg.GetNonceRequest().setAddress(from));
 
@@ -110,6 +116,7 @@ async function sendTransaction(accountClient, blockchainClient, from, to, amount
         .setGas(toGrpcAttoTolar(21000))
         .setGasPrice(toGrpcAttoTolar(1000000000000))
         .setData(Buffer.from('tolar node example app comment', 'utf-8'))
+        .setNetworkId(network_id)
         .setNonce(nonce.getNonce());
 
     const gasEstimation = await blockchainClient.getGasEstimate().sendMessage(transactionToEstimate);
@@ -152,5 +159,6 @@ module.exports = {
     getAddress,
     createAddress,
     sendTransaction,
-    printAddressBalances
+    printAddressBalances,
+    NetworkId
 }

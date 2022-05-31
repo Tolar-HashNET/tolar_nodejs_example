@@ -4,14 +4,14 @@ const util = require('../common/util')
 async function main() {
     try {
         const accountClient = util.promisifyClient(new util.account.service.AccountServiceClient(
-            "127.0.0.1:9300",
+            "127.0.0.1:9200",
             grpc.credentials.createInsecure())
         );
 
         await util.prepareKeyStore(accountClient);
 
         const blockchainClient = util.promisifyClient(new util.blockchain.service.BlockchainServiceClient(
-            "127.0.0.1:9300",
+            "127.0.0.1:9200",
             grpc.credentials.createInsecure())
         );
 
@@ -32,7 +32,7 @@ async function main() {
         // Get Transaction List
         const transactionListRequest = new util.blockchain.msg.GetTransactionListRequest();
         transactionListRequest.addAddresses(Buffer.from('5406ce41b2510285961dac9a6a60132af3cfbf26e5bc97a4ad', 'utf8'));
-        transactionListRequest.addAddresses(Buffer.from('54dc9193107c598d4586220ea5a30588518ddcaa8381c4c7a3', 'utf8'));
+        transactionListRequest.addAddresses(Buffer.from('549f86338b7967c20acfaf816b27ecdb4e87fe94355185c614', 'utf8'));
 
         transactionListRequest.setLimit(1000);
         transactionListRequest.setSkip(0);

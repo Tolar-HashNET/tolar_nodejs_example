@@ -5,7 +5,7 @@ const util = require('./common/util')
 async function main() {
     try {
         const accountClient = util.promisifyClient(new util.account.service.AccountServiceClient(
-            "127.0.0.1:9300",
+            "127.0.0.1:9200",
             grpc.credentials.createInsecure())
         );
 
@@ -13,14 +13,14 @@ async function main() {
 
         await util.printAddressBalances(accountClient);
 
-        let address = await util.getAddress(accountClient, '5406ce41b2510285961dac9a6a60132af3cfbf26e5bc97a4ad');
+        let address = await util.getAddress(accountClient, '549f86338b7967c20acfaf816b27ecdb4e87fe94355185c614');
         if (address === undefined) {
             address = await util.createAddress(accountClient);
             console.log("Created new address: " + Buffer.from(address).toString('utf8'))
         }
 
         const blockchainClient = util.promisifyClient(new util.blockchain.service.BlockchainServiceClient(
-            "127.0.0.1:9300",
+            "127.0.0.1:9200",
             grpc.credentials.createInsecure())
         );
 
@@ -31,7 +31,8 @@ async function main() {
             blockchainClient,
             address,
             toAddress,
-            util.tolarToAttoTolar(8)
+            util.tolarToAttoTolar(8),
+            util.NetworkId.TestNet
         );
 
         console.log("transaction hash: " + Buffer.from(transactionHash).toString('utf8'))

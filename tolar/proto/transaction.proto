@@ -12,6 +12,7 @@ message Transaction {
     bytes gas_price = 5;
     bytes data = 6;
     bytes nonce = 7;
+    uint64 network_id = 8;
 }
 
 message SignedTransaction {
@@ -30,7 +31,7 @@ message TxExecutionResult {
 message LogEntry {
     bytes address = 1;
     repeated bytes topics = 2;
-    string data = 3;
+    bytes data = 3;
 }
 
 message ExecutedTransaction {
