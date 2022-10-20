@@ -24,7 +24,7 @@ const account = loadProtoDefinitions('account');
 const blockchain = loadProtoDefinitions('blockchain');
 const tx = loadProtoDefinitions('transaction');
 
-function toGrpcAttoTolar(amount) {
+function toU256(amount) {
     const result = bigintBuffer.toBufferBE(BigInt(amount), 256);
     const indexOf0 = result.findIndex(byte => byte !== 0x00);
 
@@ -112,9 +112,9 @@ async function sendTransaction(accountClient, blockchainClient, from, to, amount
     const transactionToEstimate = new tx.msg.Transaction()
         .setSenderAddress(from)
         .setReceiverAddress(to)
-        .setValue(toGrpcAttoTolar(amountInAttoTolar))
-        .setGas(toGrpcAttoTolar(21000))
-        .setGasPrice(toGrpcAttoTolar(1000000000000))
+        .setValue(toU256(amountInAttoTolar))
+        .setGas(toU256(21000))
+        .setGasPrice(toU256(1000000000000))
         .setData(Buffer.from('tolar node example app comment', 'utf-8'))
         .setNetworkId(network_id)
         .setNonce(nonce.getNonce());
@@ -125,7 +125,7 @@ async function sendTransaction(accountClient, blockchainClient, from, to, amount
         .setSenderAddress(transactionToEstimate.getSenderAddress())
         .setReceiverAddress(transactionToEstimate.getReceiverAddress())
         .setAmount(transactionToEstimate.getValue())
-        .setGas(toGrpcAttoTolar(gasEstimation.getGasEstimate()))
+        .setGas(toU256(gasEstimation.getGasEstimate()))
         .setGasPrice(transactionToEstimate.getGasPrice())
         .setData(transactionToEstimate.getData())
         .setNonce(transactionToEstimate.getNonce());
@@ -149,7 +149,7 @@ module.exports = {
     account,
     blockchain,
     tx,
-    toNetworkAttoTolar: toGrpcAttoTolar,
+    toU256,
     tolarToAttoTolar,
     attoTolarToTolar,
     toNumberTolar,

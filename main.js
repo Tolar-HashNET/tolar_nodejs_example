@@ -1,6 +1,24 @@
 const grpc = require('@grpc/grpc-js');
-const util = require('./common/util')
+const util = require('./common/util');
+const web3 = require('web3')
 
+
+function calculateTransactionHash() {
+    const transaction = new util.tx.msg.Transaction()
+        .setSenderAddress(Buffer.from('5412c347d6570bcdde3a89fca489f679b8b0ca22a5d4e3b6ca', 'utf8'))
+        .setReceiverAddress(Buffer.from('549f86338b7967c20acfaf816b27ecdb4e87fe94355185c614', 'utf8'))
+        .setValue(util.toU256(1000000000))
+        .setGas(util.toU256(21000))
+        .setGasPrice(util.toU256(1000000000000))
+        .setData(Buffer.from('test data', 'utf-8'))
+        .setNetworkId(util.NetworkId.StageNet)
+        .setNonce(util.toU256(1));
+
+    const serializedTransaction = transaction.serializeBinary();
+    const transactionBodyHash = web3.utils.sha3(Buffer.from(serializedTransaction));
+
+    console.log("Transaction body hash is: " + transactionBodyHash)
+}
 
 async function main() {
     try {
@@ -44,4 +62,5 @@ async function main() {
     }
 }
 
-main();
+calculateTransactionHash();
+//main();
