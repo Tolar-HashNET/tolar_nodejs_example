@@ -23,6 +23,7 @@ function loadProtoDefinitions(protoName) {
 const account = loadProtoDefinitions('account');
 const blockchain = loadProtoDefinitions('blockchain');
 const tx = loadProtoDefinitions('transaction');
+const common = loadProtoDefinitions('common');
 
 function toU256(amount) {
     const result = bigintBuffer.toBufferBE(BigInt(amount), 256);
@@ -149,6 +150,7 @@ module.exports = {
     account,
     blockchain,
     tx,
+    common,
     toU256,
     tolarToAttoTolar,
     attoTolarToTolar,
