@@ -1,7 +1,7 @@
 const axios = require('axios');
 const util = require('./common/util');
 
-const Web3 = require('web3');
+const Web3 = require('@tolar/web3');
 const web3 = new Web3();
 
 function removeHexPrefix(str) {
@@ -12,9 +12,21 @@ function removeHexPrefix(str) {
     return str.substr(2, str.length);
 }
 
-function calculateTransactionHash(transactionBody) {
+function calculateTransactionHashStr(transactionBody) {
     const serializedTransaction = transactionBody.serializeBinary();
     return removeHexPrefix(web3.utils.sha3(Buffer.from(serializedTransaction)));
+}
+
+function normalizeSignature(ethSignature) {
+    let raw_signature = removeHexPrefix(ethSignature.signature).substr(0, 128)
+        .concat('0')
+        .concat(removeHexPrefix(ethSignature.v));
+
+    if(raw_signature.length < 130) {
+        raw_signature += '0';
+    }
+
+    return Buffer.from(raw_signature, 'utf8');
 }
 
 async function main() {
@@ -40,19 +52,21 @@ async function main() {
             // Set to genesis address, always has some tolars
             .setSenderAddress(sender_address)
             .setReceiverAddress(Buffer.from('549f86338b7967c20acfaf816b27ecdb4e87fe94355185c614', 'utf8'))
-            .setValue(util.toU256(1000000000))
-            .setGas(util.toU256(21000))
+            .setValue(util.toU256(1000003432))
+            .setGas(util.toU256(210000))
             .setGasPrice(util.toU256(1000000000000))
             .setData(Buffer.from('test data', 'utf-8'))
             .setNetworkId(util.NetworkId.StageNet)
             .setNonce(util.toU256(nonce));
 
-        const hash = calculateTransactionHash(transactionBody);
-        const ethSignature = web3.eth.accounts.sign(hash, sender_private_key.toString());
-        const signature = Buffer.from(removeHexPrefix(ethSignature.signature), 'utf8');
+        const hashStr = calculateTransactionHashStr(transactionBody);
+        const ethSignature = web3.tolar.accounts
+            .privateKeyToAccount(sender_private_key.toString())
+            .sign("0x" + hashStr);
 
+        const signature = normalizeSignature(ethSignature);
         const signatureData = new util.common.msg.SignatureData()
-            .setHash(hash)
+            .setHash(Buffer.from(hashStr, 'utf8'))
             .setSignature(signature)
             .setSignerId(sender_public_key);
 
@@ -71,7 +85,7 @@ async function main() {
             throw signedTransactionResponse.data.error;
         }
 
-        console.log(signedTransactionResponse);
+        console.log('transaction hash: ', signedTransactionResponse.data.result);
     } catch (error) {
         console.error("Failed to send signed transaction with error:", error);
     }
