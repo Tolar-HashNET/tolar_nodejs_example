@@ -1,16 +1,10 @@
 {
-  "name": "grpc-examples",
-  "version": "0.1.0",
+  "name": "tolar_nodejs_example",
+  "version": "0.2.0",
+
+  "type": "module",
+
   "dependencies": {
-    "@grpc/grpc-js": "1.6.7",
-    "google-protobuf": "3.20.1",
-    "grpc-promise": "^1.4.0",
-    "bigint-buffer": "^1.1.5"
-  },
-  "devDependencies" : {
-    "grpc-tools": "1.11.2"
-  },
-  "scripts": {
-    "preinstall": "node generate_proto.js"
+    "axios": "1.4.0"
   }
 }

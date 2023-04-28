@@ -1,7 +1,7 @@
 # Simple implementation of Tolar Hashnet using nodejs
 
 ## About
-Simple program that uses Tolar Hashnet network. All communication is done using GRPC.
+A simple program that uses Tolar Hashnet network. All communication is done using GRPC.
 Program connects to `tolar_thin_node` which proxies calls to main network.
 Execution:
 ```
@@ -13,33 +13,16 @@ Execution:
 
 ## Prerequisites
 ### nodejs
-This project is tested using nodejs v10.19.0.
+This project is tested using nodejs v18.16.0.
 ### npm
-This project is tested using npm 6.14.4.
-### node-gyp
-Build automation tool used for building `bigint-buffer`. It can be installed running:
-```sh
-npm install -g node-gyp
-```
-### git submodules
-Project contains git submodule so initialization is required.
-```
-git submodule update --init
-```
+This project is tested using npm 9.5.1.
 
 ## Build And Run
 Run from this directory:
 ```sh
-
-# 1. Install node-gyp:
-npm install -g node-gyp
-
-# 2. Install all project dependencies:
+# 1. Install all project dependencies:
 npm install
 
-# 3. Start thin_node if not started:
-sudo systemctl start tolar-thin-node.service
-
 # 4. Run application:
-npm main.js
+node main.js
 ```

@@ -1,44 +1,73 @@
-const grpc = require('@grpc/grpc-js');
-const util = require('./common/util')
+import axios from 'axios';
 
+async function request(method, params) {
+    const response = await axios.post(
+        'https://jsongw.stagenet.tolar.io/jsonrpc',
+        {jsonrpc: "2.0", id: "1", method: method, params: params},
+        {headers: {'content-type': 'application/json'}}
+    );
+
+    if('error' in response.data) {
+        throw Error("Call to " + method +
+            " failed with error code: " + response.data.error.code +
+            "; error message: " + response.data.error.message);
+    }
+
+    return response.data.result;
+}
+
+async function CreateAddress(existingAddressBalances, addressName, lockPassword) {
+    const addressIndex = existingAddressBalances.findIndex(addressBalance => addressBalance.address_name === addressName);
+
+    return addressIndex !== -1 ?
+        existingAddressBalances[addressIndex].address :
+        await request("account_createNewAddress", {
+            name: addressName,
+            lock_password: lockPassword,
+            lock_hint: ""
+        });
+}
 
 async function main() {
     try {
-        const accountClient = util.promisifyClient(new util.account.service.AccountServiceClient(
-            "127.0.0.1:9200",
-            grpc.credentials.createInsecure())
-        );
+        const accountMasterPassword = 'account_pass.1234';
 
-        await util.prepareKeyStore(accountClient);
+        const isNewlyCreated = await request('account_create', {
+            master_password: accountMasterPassword,
+            mnemonic: "total media expose arch copy immense volume rail owner pluck clever bottom"
+        });
 
-        await util.printAddressBalances(accountClient);
-
-        let address = await util.getAddress(accountClient, '549f86338b7967c20acfaf816b27ecdb4e87fe94355185c614');
-        if (address === undefined) {
-            address = await util.createAddress(accountClient);
-            console.log("Created new address: " + Buffer.from(address).toString('utf8'))
+        if(!isNewlyCreated) {
+            // If account already exists open it
+            await request("account_open", {master_password: accountMasterPassword});
         }
 
-        const blockchainClient = util.promisifyClient(new util.blockchain.service.BlockchainServiceClient(
-            "127.0.0.1:9200",
-            grpc.credentials.createInsecure())
-        );
+        const addressBalances = await request("account_listBalancePerAddress", null);
+        console.log("addressBalances: ", addressBalances);
 
-        const toAddress = await util.createAddress(accountClient);
+        const senderPassword = 'sender_pass.1234';
+        const senderAddress = await CreateAddress(addressBalances, 'sender', senderPassword);
+        const receiverAddress = await CreateAddress(addressBalances, 'receiver', 'receiver_pass.1234');
 
-        const transactionHash = await util.sendTransaction(
-            accountClient,
-            blockchainClient,
-            address,
-            toAddress,
-            util.tolarToAttoTolar(8),
-            util.NetworkId.TestNet
-        );
+        const nextNonce = await request("tol_getNonce", {address: senderAddress});
 
-        console.log("transaction hash: " + Buffer.from(transactionHash).toString('utf8'))
+        const transaction = {
+            sender_address: senderAddress,
+            receiver_address: receiverAddress,
+            amount: "123456",
+            sender_address_password: senderPassword,
+            gas: "21000",
+            gas_price: "1",
+            data: "",
+            nonce: nextNonce,
+            network_id: 0
+        };
+
+        transaction.gas = await request("tol_getGasEstimate", transaction);
+        const transactionHash = await request("account_sendRawTransaction", transaction);
+        console.log("transaction hash: " + transactionHash);
 
         await new Promise(resolve => setTimeout(resolve, 10000));
-        await util.printAddressBalances(accountClient);
     } catch (e) {
         console.error(e);
     }
